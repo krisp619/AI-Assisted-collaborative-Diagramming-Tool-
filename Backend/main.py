@@ -9,17 +9,16 @@ from typing import List, Dict, Any
 import base64
 
 
-# -------------------- Logging --------------------
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# -------------------- App Setup --------------------
+
 app = FastAPI(title="AI Diagramming Tool", version="1.0.0")
 
-# Static Files
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# CORS
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://localhost:8000"],
@@ -28,12 +27,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Dummy DB
+
 users_db = {
     "demo@example.com": "password123"
 }
 
-# -------------------- Pydantic Models --------------------
+
 class LoginRequest(BaseModel):
     email: str
     password: str
@@ -42,7 +41,7 @@ class RegisterRequest(BaseModel):
     email: str
     password: str
 
-# -------------------- Auth Routes --------------------
+
 @app.post("/register")
 async def register_user(user: RegisterRequest):
     if user.email in users_db:
@@ -56,7 +55,7 @@ async def login_user(user: LoginRequest):
         return {"success": False, "message": "Invalid email or password!"}
     return {"success": True, "message": "Login successful!"}
 
-# -------------------- Static Page Routes --------------------
+
 @app.get("/login")
 async def login_page():
     return FileResponse("static/login.html")
@@ -69,7 +68,7 @@ async def register_page():
 async def home_page():
     return FileResponse("static/index.html")
 
-# -------------------- WebSocket Manager --------------------
+
 class ConnectionManager:
     def __init__(self):
         self.active_connections: List[WebSocket] = []
@@ -105,7 +104,7 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
-# -------------------- Drawing Models --------------------
+
 class DrawingAction(BaseModel):
     type: str
     x: float
@@ -132,7 +131,7 @@ class AICleanupResponse:
             "message": self.message
         }
 
-# -------------------- WebSocket Endpoint --------------------
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
@@ -158,7 +157,7 @@ async def websocket_endpoint(websocket: WebSocket):
         logger.error(f"WebSocket error: {e}")
         manager.disconnect(websocket)
 
-# -------------------- AI Cleanup Endpoint --------------------
+
 @app.post("/ai/cleanup", response_model=dict)
 async def ai_cleanup(request: AICleanupRequest):
 
@@ -206,17 +205,18 @@ async def ai_cleanup(request: AICleanupRequest):
                 "color": "#000000",
                 "lineWidth": 2
             })
+
         x += width + spacing
 
     return AICleanupResponse(commands=commands, success=True,
                              message="Diagram cleaned successfully").to_dict()
 
-# -------------------- Health Check --------------------
+
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "active_connections": len(manager.active_connections)}
 
-# -------------------- Main --------------------
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
