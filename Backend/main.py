@@ -9,6 +9,7 @@ from typing import List, Dict, Any
 import base64
 
 
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -28,8 +29,6 @@ users_db = {
     "demo@example.com": "password123"
 }
 
-
-# -------------------- MODELS --------------------
 class LoginRequest(BaseModel):
     email: str
     password: str
@@ -82,6 +81,7 @@ class ConnectionManager:
         logger.info(f"Client disconnected. Total connections: {len(self.active_connections)}")
 
     async def broadcast(self, message: dict, sender: WebSocket = None):
+
         if not self.active_connections:
             return
         
@@ -102,8 +102,6 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
-
-# -------------------- WEBSOCKETS --------------------
 @app.websocket("/ws/draw")
 async def websocket_draw(websocket: WebSocket):
     await manager.connect(websocket)
@@ -124,11 +122,16 @@ async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
+
             data = await websocket.receive_text()
             try:
+
                 drawing_data = json.loads(data)
+            
                 action = DrawingAction(**drawing_data)
+
                 await manager.broadcast(drawing_data, sender=websocket)
+
             except json.JSONDecodeError:
                 await websocket.send_text(json.dumps({"error": "Invalid JSON format"}))
             except Exception as e:
@@ -167,12 +170,13 @@ async def register_page():
 
 @app.post("/ai/cleanup", response_model=dict)
 async def ai_cleanup(request: AICleanupRequest):
+
     try:
         base64.b64decode(request.image_data)
     except Exception as e:
         logger.error(f"Failed to decode image: {e}")
         raise HTTPException(status_code=400, detail="Invalid image data")
-
+    
     process_steps = ["Start", "Process", "End"]
     commands = []
     x, y = 50, 50
@@ -180,6 +184,7 @@ async def ai_cleanup(request: AICleanupRequest):
     spacing = 50
 
     for i, step in enumerate(process_steps):
+
         commands.append({
             "type": "rectangle",
             "x": x,
@@ -189,6 +194,7 @@ async def ai_cleanup(request: AICleanupRequest):
             "color": "#000000",
             "lineWidth": 2
         })
+
         commands.append({
             "type": "text",
             "x": x + width // 2,
@@ -197,6 +203,8 @@ async def ai_cleanup(request: AICleanupRequest):
             "fontSize": 14,
             "color": "#000000"
         })
+        
+
         if i < len(process_steps) - 1:
             commands.append({
                 "type": "line",
@@ -207,6 +215,8 @@ async def ai_cleanup(request: AICleanupRequest):
                 "color": "#000000",
                 "lineWidth": 2
             })
+
+
         x += width + spacing
 
     return AICleanupResponse(commands=commands, success=True,
