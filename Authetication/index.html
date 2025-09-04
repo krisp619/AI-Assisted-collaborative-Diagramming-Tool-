@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Diagramming Tool</title>
+  <link rel="stylesheet" href="style.css"> 
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      text-align: center;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0px 2px 8px rgba(0,0,0,0.2);
+      width: 320px;
+    }
+    h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+    a, button {
+      display: block;
+      margin: 10px auto;
+      padding: 12px;
+      background: #007bff;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+      border: none;
+      width: 80%;
+      cursor: pointer;
+    }
+    a:hover, button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2 id="welcome-text">Welcome to AI Diagramming Tool</h2>
+    <p id="info-text">Login or register to start drawing.</p>
+
+    <!-- ✅ Updated paths -->
+    <a id="login-link" href="login.html">Login</a>
+    <a id="register-link" href="register.html">Register</a>
+
+    <button id="logout-btn" style="display:none;">Logout</button>
+  </div>
+
+  <script>
+    const email = localStorage.getItem("userEmail");
+    if (email) {
+      document.getElementById("welcome-text").innerText = `Welcome, ${email}`;
+      document.getElementById("info-text").style.display = "none";
+      document.getElementById("login-link").style.display = "none";
+      document.getElementById("register-link").style.display = "none";
+      document.getElementById("logout-btn").style.display = "block";
+    }
+
+    document.getElementById("logout-btn").addEventListener("click", () => {
+      localStorage.removeItem("userEmail");
+      window.location.reload();
+    });
+  </script>
+</body>
+</html>
